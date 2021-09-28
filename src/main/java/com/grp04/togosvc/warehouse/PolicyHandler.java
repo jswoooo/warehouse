@@ -11,32 +11,29 @@ public class PolicyHandler{
     @Autowired WarehouseRepository warehouseRepository;
 
     @StreamListener(KafkaProcessor.INPUT)
-    public void wheneverDeiveryCompleted_DeliveryStatusChange(@Payload DeliveryCompleted deiveryCompleted){
+    public void wheneverDeiveryCompleted_DeliveryStatusChange(@Payload DeliveryCompleted deliveryCompleted){
 
-        if(!deiveryCompleted.validate()) return;
+        if(!deliveryCompleted.validate()) return;
 
-        System.out.println("\n\n##### listener DeliveryStatusChange : " + deiveryCompleted.toJson() + "\n\n");
+        System.out.println("\n\n##### listener DeliveryStatusChange : " + deliveryCompleted.toJson() + "\n\n");
 
-
-
-        // Sample Logic //
-        // Warehouse warehouse = new Warehouse();
-        // warehouseRepository.save(warehouse);
+        Warehouse warehouse = warehouseRepository.findByProductId(deliveryCompleted.getProductId());
+        warehouse.setProductQty(warehouse.getProductQty()-1);
+        warehouseRepository.save(warehouse);
 
     }
     @StreamListener(KafkaProcessor.INPUT)
-    public void wheneverServiceStrted_Warehousing(@Payload ServiceStarted serviceStrted){
+    public void wheneverServiceStrted_Warehousing(@Payload ServiceStarted serviceStarted){
 
-        if(!serviceStrted.validate()) return;
+        if(!serviceStarted.validate()) return;
 
-        System.out.println("\n\n##### listener Warehousing : " + serviceStrted.toJson() + "\n\n");
+        System.out.println("\n\n##### listener Warehousing : " + serviceStarted.toJson() + "\n\n");
 
-
-
-        // Sample Logic //
-        // Warehouse warehouse = new Warehouse();
-        // warehouseRepository.save(warehouse);
-
+        Warehouse warehouse = new Warehouse();
+        warehouse.setProductId(serviceStarted.getProductId());
+        warehouse.setProductName(serviceStarted.getProductName());
+        warehouse.setProductQty(serviceStarted.getPlanQty());
+        warehouseRepository.save(warehouse);
     }
 
 
